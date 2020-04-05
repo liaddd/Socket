@@ -12,12 +12,12 @@
         android:layout_centerInParent="true" />
 
     <TextView
-        android:layout_below="@+id/waiting_for_peer_fragment_progress_bar"
-        android:layout_marginTop="16dp"
-        android:textSize="24sp"
-        android:layout_centerHorizontal="true"
-        android:text="Waiting for connection..."
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/waiting_for_peer_fragment_progress_bar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="@string/waiting_for_connection"
+        android:textSize="24sp" />
 
 </RelativeLayout>
