@@ -1,8 +1,9 @@
-package com.liad.sockettest
+package com.liad.sockettest.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.liad.sockettest.extensions.changeFragment
+import com.liad.sockettest.R
+import com.liad.sockettest.utills.extensions.changeFragment
 import com.liad.sockettest.fragments.MainFragment
 import com.liad.sockettest.managers.SocketWebManager
 

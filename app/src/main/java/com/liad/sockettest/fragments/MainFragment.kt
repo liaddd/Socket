@@ -7,13 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.github.nkzawa.socketio.client.Socket
 import com.liad.sockettest.R
-import com.liad.sockettest.extensions.changeFragment
-import com.liad.sockettest.extensions.log
 import com.liad.sockettest.managers.SocketWebManager
-import com.liad.sockettest.utills.Constants
+import com.liad.sockettest.utills.extensions.changeFragment
+import com.liad.sockettest.utills.extensions.log
 import kotlinx.android.synthetic.main.fragment_main.*
-import org.json.JSONObject
-import java.util.*
 
 class MainFragment : Fragment() {
 
@@ -37,10 +34,11 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initSocket()
-        setOnClickListener()
+        startOnClickListener()
     }
 
     private fun initSocket() {
+        // TODO Liad - delete in production (only for testing)
         mSocket.disconnect()
         mSocket.on(Socket.EVENT_CONNECT) {
             log("Connected!")
@@ -49,23 +47,12 @@ class MainFragment : Fragment() {
         mSocket.connect()
     }
 
-    private fun setOnClickListener() {
-
+    private fun startOnClickListener() {
         activity?.also { activity ->
             main_fragment_start_text_view.setOnClickListener {
                 changeFragment(activity, WaitingForPeerFragment.newInstance(), addToStack = true)
-                // todo Liad - REMOVE (only for testing without second peer connection)
-                //startPeering()
             }
         }
-    }
-
-    private fun startPeering() {
-        val uuid = UUID.randomUUID()
-        mSocket.emit(
-            SocketWebManager.READY_FOR_PEERING,
-            JSONObject().put(Constants.USER_ID, uuid).put("name", "Liad")
-        )
     }
 
 }

@@ -6,10 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.liad.sockettest.R
-import com.liad.sockettest.extensions.changeFragment
-import com.liad.sockettest.extensions.log
 import com.liad.sockettest.managers.SocketWebManager
+import com.liad.sockettest.models.ChatUser
 import com.liad.sockettest.utills.Constants
+import com.liad.sockettest.utills.extensions.changeFragment
+import com.liad.sockettest.utills.extensions.generateJSON
+import com.liad.sockettest.utills.extensions.log
 import kotlinx.android.synthetic.main.fragment_waiting_for_peer.*
 import org.json.JSONObject
 import java.util.*
@@ -26,7 +28,7 @@ class WaitingForPeerFragment : Fragment() {
     }
 
     private val mSocket = SocketWebManager.getInstance()
-    private lateinit var secondUserId: String
+    private lateinit var chatUser: ChatUser
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,16 +50,20 @@ class WaitingForPeerFragment : Fragment() {
         val uuid = UUID.randomUUID()
         mSocket.emit(
             SocketWebManager.READY_FOR_PEERING,
-            JSONObject().put(Constants.USER_ID, uuid).put("name", Constants.NAME)
+            generateJSON(Constants.USER_ID to uuid, Constants.NAME to "Rotem")
         )
     }
 
     private fun setSocketListeners() {
         mSocket.on(SocketWebManager.PEER_FOUND) {
             val obj = it[0] as JSONObject
-            secondUserId = obj.getString("userId")
             log("PEER_FOUND $obj")
-            log("second user id: $secondUserId")
+
+            val userId = obj.getString(Constants.USER_ID)
+            val name = obj.getString(Constants.NAME)
+            val socketId = obj.getString(Constants.SOCKET_ID)
+            chatUser = ChatUser(socketId, userId, name)
+            log("$chatUser")
             moveToChatFragment()
         }
     }
@@ -65,8 +71,8 @@ class WaitingForPeerFragment : Fragment() {
     private fun moveToChatFragment() {
         activity?.also { activity ->
             val bundle = Bundle()
-            bundle.putString(Constants.SECOND_USER_ID , secondUserId)
-            changeFragment(activity, ChatFragment.newInstance(), bundle , true)
+            bundle.putString(Constants.USER_ID, chatUser.userId)
+            changeFragment(activity, ChatFragment.newInstance(), bundle, true)
         }
     }
 }

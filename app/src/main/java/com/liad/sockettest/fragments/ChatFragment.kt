@@ -11,9 +11,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.liad.sockettest.R
 import com.liad.sockettest.adapters.ChatAdapter
-import com.liad.sockettest.extensions.log
 import com.liad.sockettest.managers.SocketWebManager
+import com.liad.sockettest.models.ChatMessage
 import com.liad.sockettest.utills.Constants
+import com.liad.sockettest.utills.extensions.createChatMessageFromJson
+import com.liad.sockettest.utills.extensions.generateJSON
+import com.liad.sockettest.utills.extensions.log
 import kotlinx.android.synthetic.main.fragment_chat.*
 import org.json.JSONObject
 
@@ -38,15 +41,14 @@ class ChatFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View = inflater.inflate(R.layout.fragment_chat, container, false)
 
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        secondUserId = arguments?.getString(Constants.SECOND_USER_ID)
+        secondUserId = arguments?.getString(Constants.USER_ID)
         initViews()
     }
 
     private fun initViews() {
-        chatAdapter = ChatAdapter()
+        chatAdapter = ChatAdapter(secondUserId ?: "")
         chatRV = chat_fragment_recycler_view
         chatRV.apply {
             layoutManager = LinearLayoutManager(context)
@@ -62,7 +64,10 @@ class ChatFragment : Fragment() {
             if (secondUserId.isNullOrEmpty()) return@run
             mSocket.emit(
                 SocketWebManager.CHAT_MESSAGE,
-                JSONObject().put("to", secondUserId).put("message", message.text.toString())
+                generateJSON(
+                    Constants.TO to secondUserId!!,
+                    Constants.MESSAGE to message.text.toString()
+                )
             )
             message.text?.clear()
         }
@@ -72,8 +77,10 @@ class ChatFragment : Fragment() {
         mSocket.on(SocketWebManager.CHAT_MESSAGE) {
             val obj = it[0] as JSONObject
             log("SocketWebManager.CHAT_MESSAGE $obj")
-            val message = obj.getString(SocketWebManager.MESSAGE)
-            updateAdapter(message)
+            val chatMessage = createChatMessageFromJson(obj)
+            chatMessage?.let { chatMsgObj ->
+                updateAdapter(chatMsgObj)
+            }
         }
 
         mSocket.on(SocketWebManager.PEER_DISCONNECTED) {
@@ -81,7 +88,7 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun updateAdapter(message: String) {
+    private fun updateAdapter(message: ChatMessage) {
         activity?.runOnUiThread {
             chatAdapter.addMessage(message)
             val layoutManager: RecyclerView.LayoutManager =
